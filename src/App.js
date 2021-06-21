@@ -1,25 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Header from './components/Header'
+import { v4 as uuid_v4 } from "uuid";
+import AddContact from './components/AddContact'
+import ContactList from './components/ContactList'
 
 function App() {
+  const LOCAL_STORAGE_KEY = "contacts"
+  const [contacts, setcontacts] = useState([] /*,() =>{
+    const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return localData ? JSON.parse(localData) : []
+  }*/);
+
+  const contactHandler = (contact) => {
+    console.log(contact);
+    setcontacts([...contacts, { id: uuid_v4(), ...contact }])
+  }
+
+  const contactDeletehandler = (id) => {
+    const newContactList = contacts.filter((contact) => {
+      return contact.id !== id;
+    })
+    setcontacts(newContactList);
+  }
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(contacts))
+  }, [contacts])
+
+  useEffect(() => {
+    const retrieve_Contact = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    if (retrieve_Contact)
+      setcontacts(retrieve_Contact);
+  }, [])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className=" ui container">
+      <Router>
+        <Header></Header>
+        <Switch>
+          <Route
+            path="/"
+            exact
+            render={(props) => (<ContactList {...props}  contacts={contacts} deleteContact={contactDeletehandler} ></ContactList>)}
+          />
+          <Route
+            path="/add"
+            render={(props) => (<AddContact {...props} contactHandler={contactHandler}></AddContact>)}
+          >
+          </Route>
+        </Switch>
+      </Router>
+
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
