@@ -12,6 +12,9 @@ function App() {
     return localData ? JSON.parse(localData) : []
   }*/);
 
+  const [searchTerm, setsearchTerm] = useState("");
+  const [searchResult, setsearchResult] = useState([])
+
   const contactHandler = (contact) => {
     console.log(contact);
     setcontacts([...contacts, { id: uuid_v4(), ...contact }])
@@ -33,21 +36,48 @@ function App() {
     if (retrieve_Contact)
       setcontacts(retrieve_Contact);
   }, [])
+
+
+  const searchHndler = (inputvalue) =>{
+    setsearchTerm(inputvalue);
+
+    if(searchTerm !== "") {
+      const newContactList = contacts.filter((contact)=>{
+        return Object.values(contact)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      })
+      setsearchResult(newContactList)
+    }
+    else{
+      setsearchResult(contacts)
+    }
+
+  
+  }
   return (
     <div className=" ui container">
       <Router>
-        <Header></Header>
         <Switch>
-          <Route
-            path="/"
-            exact
-            render={(props) => (<ContactList {...props}  contacts={contacts} deleteContact={contactDeletehandler} ></ContactList>)}
-          />
           <Route
             path="/add"
             render={(props) => (<AddContact {...props} contactHandler={contactHandler}></AddContact>)}
           >
           </Route>
+
+          <Route
+            path="/"
+            exact
+            render={(props) => (
+            <ContactList {...props}  
+            contacts={searchTerm.length < 1 ? contacts :searchResult} 
+            deleteContact={contactDeletehandler} 
+            term={searchTerm} 
+            searchContact={searchHndler}
+            >
+            </ContactList>)}
+          />
         </Switch>
       </Router>
 
